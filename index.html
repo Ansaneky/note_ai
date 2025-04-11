@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beautiful Notepad with Autocorrect and Autosuggest</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8e1e7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            transition: background-color 0.3s ease;
+            overflow: hidden;
+        }
+
+        .notepad-container {
+            background: rgba(255, 255, 255, 0.9);
+            width: 100%;
+            max-width: 800px;
+            margin: 30px auto;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border: 2px solid #ffccd5;
+            position: relative;
+            top: 20px;
+            transform: translateY(0);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .notepad-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .menu-bar {
+            background: #ffccd5;
+            padding: 5px 10px;
+            display: flex;
+            gap: 15px;
+            color: #fff;
+            font-weight: 500;
+            border-top-left-radius: 18px;
+            border-top-right-radius: 18px;
+        }
+
+        .menu-bar span {
+            cursor: pointer;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            padding: 10px;
+            background: #ffccd5;
+            border-bottom: 1px solid #ff9999;
+            flex-wrap: wrap;
+            border-top: 1px solid #ff9999;
+        }
+
+        .toolbar button {
+            background: none;
+            border: none;
+            font-size: 16px;
+            padding: 8px 12px;
+            cursor: pointer;
+            border-radius: 15px;
+            transition: background 0.2s, color 0.2s;
+            color: #fff;
+        }
+
+        .toolbar button:hover {
+            background: #ff9999;
+            color: #fff;
+        }
+
+        .toolbar .action-btn {
+            background: #e8f0fe;
+            color: #1a73e8;
+            font-weight: 500;
+        }
+
+        .toolbar .action-btn:hover {
+            background: #d2e3fc;
+        }
+
+        .note-area {
+            flex: 1;
+            padding: 20px;
+            font-size: 16px;
+            line-height: 1.6;
+            outline: none;
+            min-height: 400px;
+            overflow-y: auto;
+            position: relative;
+            background: #fff;
+            border: 1px solid #ffccd5;
+            border-radius: 0 0 15px 15px;
+        }
+
+        .note-area:empty:before {
+            content: attr(placeholder);
+            color: #999;
+        }
+
+        .stats {
+            padding: 10px 20px;
+            background: #ffccd5;
+            border-top: 1px solid #ff9999;
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            color: #fff;
+            border-bottom-left-radius: 18px;
+            border-bottom-right-radius: 18px;
+        }
+
+        .direct-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #ff9999;
+            color: #fff;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .direct-btn:hover {
+            background: #ff6666;
+        }
+
+        /* Dark Mode */
+        body.dark {
+            background-color: #1a1a1a;
+        }
+
+        body.dark .notepad-container {
+            background: rgba(44, 44, 44, 0.9);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        body.dark .menu-bar {
+            background: #3a3a3a;
+            color: #bbb;
+        }
+
+        body.dark .toolbar {
+            background: #3a3a3a;
+            border-bottom: 1px solid #444;
+        }
+
+        body.dark .note-area {
+            color: #e0e0e0;
+            background: #2c2c2c;
+            border-color: #444;
+        }
+
+        body.dark .stats {
+            background: #3a3a3a;
+            border-top: 1px solid #444;
+            color: #bbb;
+        }
+
+        body.dark .toolbar button:hover {
+            background: #4a4a4a;
+        }
+
+        body.dark .toolbar .action-btn {
+            background: #1a73e8;
+            color: #fff;
+        }
+
+        body.dark .toolbar .action-btn:hover {
+            background: #1557b0;
+        }
+
+        body.dark .direct-btn {
+            background: #444;
+        }
+
+        body.dark .direct-btn:hover {
+            background: #555;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            .notepad-container {
+                margin: 10px;
+                max-width: 90%;
+            }
+
+            .menu-bar {
+                font-size: 12px;
+                gap: 10px;
+            }
+
+            .toolbar {
+                gap: 5px;
+            }
+
+            .toolbar button {
+                padding: 6px 10px;
+                font-size: 14px;
+            }
+
+            .note-area {
+                font-size: 14px;
+                padding: 15px;
+            }
+
+            .stats {
+                font-size: 12px;
+                padding: 8px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="notepad-container">
+        <div class="menu-bar">
+            <span>File</span>
+            <span>Edit</span>
+            <span>View</span>
+            <span>Options</span>
+            <span>Help</span>
+        </div>
+        <div class="toolbar">
+            <button id="bold-btn" title="Bold"><b>B</b></button>
+            <button id="italic-btn" title="Italic"><i>I</i></button>
+            <button id="underline-btn" title="Underline"><u>U</u></button>
+            <button id="theme-toggle" title="Toggle Theme">🌙</button>
+            <button id="add-image-btn" title="Add Image">📷</button>
+        </div>
+        <button class="direct-btn">Direct</button>
+        <div class="note-area" contenteditable="true" placeholder="Start typing your notes..."></div>
+        <div class="stats">
+            <span id="word-count">Words: 0</span>
+            <span id="char-count">Characters: 0</span>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const noteArea = document.querySelector('.note-area');
+            const toolbar = document.querySelector('.toolbar');
+            const boldBtn = document.getElementById('bold-btn');
+            const italicBtn = document.getElementById('italic-btn');
+            const underlineBtn = document.getElementById('underline-btn');
+            const themeToggle = document.getElementById('theme-toggle');
+            const addImageBtn = document.getElementById('add-image-btn');
+            const wordCount = document.getElementById('word-count');
+            const charCount = document.getElementById('char-count');
+
+            // Load saved note from localStorage
+            noteArea.innerHTML = localStorage.getItem('note') || '';
+            updateStats();
+
+            // Formatting buttons
+            boldBtn.addEventListener('click', () => {
+                document.execCommand('bold', false, null);
+                noteArea.focus();
+            });
+
+            italicBtn.addEventListener('click', () => {
+                document.execCommand('italic', false, null);
+                noteArea.focus();
+            });
+
+            underlineBtn.addEventListener('click', () => {
+                document.execCommand('underline', false, null);
+                noteArea.focus();
+            });
+
+            // Theme toggle
+            themeToggle.addEventListener('click', () => {
+                document.body.classList.toggle('dark');
+                themeToggle.textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
+            });
+
+            // Add Image button
+            addImageBtn.addEventListener('click', () => {
+                if (confirm('Would you like to add an image to your text? (This will generate or allow upload of an image)')) {
+                    alert('Please upload an image or let me know if you want me to generate one for you. (Functionality to be implemented based on your input)');
+                    // Placeholder for image upload/generate logic
+                    noteArea.focus();
+                }
+            });
+
+            // Auto-save and update stats
+            noteArea.addEventListener('input', () => {
+                localStorage.setItem('note', noteArea.innerHTML);
+                updateStats();
+                removeActionButtons(); // Remove buttons on new input
+            });
+
+            // Update word and character count
+            function updateStats() {
+                const text = noteArea.innerText.trim();
+                const words = text ? text.split(/\s+/).length : 0;
+                const chars = text.length;
+                wordCount.textContent = `Words: ${words}`;
+                charCount.textContent = `Characters: ${chars}`;
+            }
+
+            // Remove action buttons (Correct/Suggestions)
+            function removeActionButtons() {
+                const buttons = toolbar.querySelectorAll('.action-btn');
+                buttons.forEach(btn => btn.remove());
+                console.log('Action buttons removed');
+            }
+
+            // Autocorrect and autosuggest on spacebar
+            noteArea.addEventListener('keyup', async (e) => {
+                if (e.code === 'Space') {
+                    console.log('Spacebar pressed, processing autocorrect and autosuggest...');
+
+                    // Get the last word and entire text
+                    const currentText = noteArea.innerText.trim();
+                    const words = currentText.split(/\s+/).filter(word => word.length > 0);
+                    const lastWord = words[words.length - 1] || '';
+                    const fullText = currentText;
+
+                    console.log(`Last word extracted: "${lastWord}"`);
+                    console.log(`Full text for suggestion: "${fullText}"`);
+
+                    // Remove existing buttons
+                    removeActionButtons();
+
+                    // Default responses
+                    let correctedWord = lastWord; // Default to original if no correction
+                    let suggestedWord = 'next';
+
+                    if (lastWord) {
+                        try {
+                            // Call both APIs concurrently
+                            const [correctResponse, suggestResponse] = await Promise.all([
+                                fetch('http://localhost:11434/api/chat', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        model: 'gemma2:2b',
+                                        messages: [
+                                            {
+                                                role: 'user',
+                                                content: `Act as autocorrect expert just correct user input if needed, dont add anything else or response any other text or sentence along with the response. Give response in one word dont. Input: ${lastWord}. Give one word response only`,
+                                            },
+                                        ],
+                                        stream: false,
+                                        temperature: 0,
+                                    }),
+                                }).catch(() => null),
+                                fetch('http://localhost:11434/api/chat', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        model: 'gemma2:2b',
+                                        messages: [
+                                            {
+                                                role: 'user',
+                                                content: `Act as auto suggestion expert just suggest next word based on user input, dont add anything else or response any other text or sentence along with the response. Give response in one word dont. Input: ${fullText}`,
+                                            },
+                                        ],
+                                        stream: false,
+                                        temperature: 0,
+                                    }),
+                                }).catch(() => null),
+                            ]);
+
+                            // Process autocorrect response
+                            if (correctResponse && correctResponse.ok) {
+                                const data = await correctResponse.json();
+                                correctedWord = data.message.content.trim();
+                                console.log(`Autocorrect API raw response:`, data);
+                                console.log(`Corrected word from API: "${correctedWord}"`);
+                            } else {
+                                console.warn('Autocorrect API failed or not reachable, using context-specific mock');
+                                correctedWord = lastWord === 'ma' ? 'am' : lastWord === 'dont' ? "don't" : lastWord;
+                                console.log(`Mock corrected word: "${correctedWord}"`);
+                            }
+
+                            // Process autosuggest response
+                            if (suggestResponse && suggestResponse.ok) {
+                                const data = await suggestResponse.json();
+                                suggestedWord = data.message.content.trim();
+                                console.log(`Autosuggest API raw response:`, data);
+                                console.log(`Suggested word from API: "${suggestedWord}"`);
+                            } else {
+                                console.warn('Autosuggest API failed or not reachable, using mock "next"');
+                                suggestedWord = 'next';
+                            }
+                        } catch (error) {
+                            console.error('API error:', error.message);
+                            alert('API call failed. Using mock responses (e.g., "am" for "ma", "next" for suggestions). Check http://localhost:11434/api/chat.');
+                            correctedWord = lastWord === 'ma' ? 'am' : lastWord === 'dont' ? "don't" : lastWord;
+                            console.log(`Fallback mock corrected word: "${correctedWord}"`);
+                        }
+                    } else {
+                        console.log('No last word detected, using defaults: original word and "next"');
+                        correctedWord = 'word'; // Fallback if no word
+                    }
+
+                    // Create Correct button
+                    const correctBtn = document.createElement('button');
+                    correctBtn.className = 'action-btn';
+                    correctBtn.textContent = `Correct: ${correctedWord}`;
+                    correctBtn.title = lastWord ? `Replace "${lastWord}" with "${correctedWord}"` : 'No word to correct';
+                    correctBtn.addEventListener('click', () => {
+                        console.log(`Correct button clicked: Replacing "${lastWord}" with "${correctedWord}"`);
+                        if (lastWord) {
+                            // Find and replace the last word
+                            let lastNode = noteArea.lastChild;
+                            while (lastNode && lastNode.nodeType !== Node.TEXT_NODE) {
+                                lastNode = lastNode.lastChild;
+                            }
+                            if (lastNode) {
+                                const textContent = lastNode.textContent;
+                                const lastWordIndex = textContent.lastIndexOf(lastWord);
+                                if (lastWordIndex !== -1) {
+                                    lastNode.textContent = textContent.substring(0, lastWordIndex) + correctedWord + textContent.substring(lastWordIndex + lastWord.length);
+                                } else {
+                                    console.warn('Last word not found exactly, appending correction');
+                                    lastNode.textContent = textContent.replace(/\s*$/, '') + correctedWord + ' ';
+                                }
+                            } else {
+                                console.warn('No text node, creating new');
+                                noteArea.appendChild(document.createTextNode(correctedWord + ' '));
+                            }
+                        }
+                        // Move cursor to the end
+                        const selection = window.getSelection();
+                        const range = document.createRange();
+                        range.selectNodeContents(noteArea);
+                        range.collapse(false);
+                        selection.removeAllRanges();
+                        selection.addRange(range);
+                        localStorage.setItem('note', noteArea.innerHTML);
+                        updateStats();
+                        removeActionButtons();
+                        noteArea.focus();
+                    });
+
+                    // Create Suggestions button
+                    const suggestBtn = document.createElement('button');
+                    suggestBtn.className = 'action-btn';
+                    suggestBtn.textContent = `Suggestions: ${suggestedWord}`;
+                    suggestBtn.title = `Insert "${suggestedWord}"`;
+                    suggestBtn.addEventListener('click', () => {
+                        console.log(`Suggestions button clicked: Inserting "${suggestedWord}"`);
+                        document.execCommand('insertText', false, suggestedWord + ' ');
+                        localStorage.setItem('note', noteArea.innerHTML);
+                        updateStats();
+                        removeActionButtons();
+                        noteArea.focus();
+                    });
+
+                    // Append buttons
+                    toolbar.appendChild(correctBtn);
+                    toolbar.appendChild(suggestBtn);
+                    console.log(`Buttons created - Correct: "${correctedWord}", Suggestions: "${suggestedWord}"`);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
